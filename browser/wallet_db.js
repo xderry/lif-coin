@@ -12,7 +12,8 @@ import sha256lif from './sha256lif.js';
 const sha256 = bitcoin.crypto.sha256;
 import {T, OE, OV, OA, ewait, esleep, assert, ipc_postmessage}
   from './util.js';
-import {mine, mine_worker_call, mine_steps, date_time} from './mine.js';
+import {mine, mine_worker_call, mine_steps, date_time,
+  header_set_target} from './mine.js';
 
 const HD_SCAN_GAP = 20;
 const DUST_VAL = 1;
@@ -861,12 +862,14 @@ export function kv_is_dns(key){
 }
 
 export async function mine_solo({netconf, saddr, min=0, max=0x100000000,
-  on_update})
+  on_update, sim_target})
 {
   const el = _el(netconf);
   let ret = await el.mine_get_template(saddr);
   const header = Buffer.from(ret.header, 'hex');
-  console.log('starting mining', ret.header);
+  if (sim_target)
+    header_set_target(header, sim_target);
+  console.log('starting mining', header.toString('hex'));
   let time_local = date_time();
   let opt = {pow: netconf.pow, header, min, max, time_local, on_update};
   let mine_ret;
@@ -877,6 +880,8 @@ export async function mine_solo({netconf, saddr, min=0, max=0x100000000,
   console.log('mine_res', mine_ret);
   if (!mine_ret.found)
     return mine_ret;
+  if (sim_target)
+    return {found: true};
   console.log('submitting new block');
   mine_ret.header = mine_ret.header.toString('hex');
   ret = await el.mine_submit_header(mine_ret.header);

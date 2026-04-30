@@ -775,6 +775,7 @@ function Mine_screen({wallet}){
   const [count, setCount] = useState(0);
   const [stats, setStats] = useState(null);
   const [elapsed, setElapsed] = useState(0);
+  const [sim_target, set_sim_target] = useState(false);
   const runningRef = useRef(false);
   const blockStartRef = useRef(null);
   const toggle = ()=>{
@@ -792,7 +793,9 @@ function Mine_screen({wallet}){
       const saddr = wallet.c.receiveAddress;
       while (runningRef.current){
         blockStartRef.current = Date.now();
-        const ret = await mine_solo({netconf, saddr, on_update: up=>{
+        const ret = await mine_solo({netconf, saddr,
+          ...(sim_target ? {sim_target: 0x1d00ffff} : {}),
+          on_update: up=>{
           if (!runningRef.current)
             return {stop: true};
           setStats(up);
@@ -821,6 +824,14 @@ function Mine_screen({wallet}){
       <button onClick={toggle} style={{fontSize: 16, marginTop: 8}}>
         {on ? '⏹ Stop mining' : '▶ Start mining'}
       </button>
+      {settings.ls.devtools && !on && (
+        <div style={{marginTop: 10}}>
+          <label style={{display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontSize: 13}}>
+            <input type="checkbox" checked={sim_target} onChange={e=>set_sim_target(e.target.checked)} />
+            Simulate real difficulty target
+          </label>
+        </div>
+      )}
       <div style={{marginTop: 16, fontSize: 14}}>
         Blocks mined: <strong>{count}</strong>
       </div>
@@ -833,7 +844,7 @@ function Mine_screen({wallet}){
             </tr>
             <tr>
               <td style={{color: '#666', paddingRight: 16}}>Total hashes</td>
-              <td><strong>{stats?.total ? stats.total.toLocaleString() : '…'}</strong></td>
+              <td><strong>{stats?.total_h ? stats.total_h.toLocaleString() : '…'}</strong></td>
             </tr>
             <tr>
               <td style={{color: '#666', paddingRight: 16}}>Hashes to win</td>
