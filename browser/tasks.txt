@@ -51,8 +51,8 @@ make wallet.jsx support multiple wallets
   + add JSON RPC getblocktemplate
 + calculate how many HPS needed to get on avarage a share of sats.
 + fix UI for aruk.localhost:4000 error msg
-* fix sim_target
-* add UI of estimations of when expected
++ fix sim_target
++ add UI of estimations of when expected
   mining success, and how much will be earned, and how much expected per day
   of mining, and how much expected per month of mining.
 - make lif/git source to bring most up-to-date versions: latest->HEAD
